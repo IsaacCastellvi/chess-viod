@@ -19,8 +19,6 @@ void setupUTF8() {
 std::vector<std::vector<char>> table;
 
 void CreateTable(std::vector<std::vector<char>>& table,int size,char ch){
-    //vector constructors instead of iteration
-    table = std::vector<std::vector<char>>(size,std::vector<char>(size,ch));
     return;
 }
 #include <iostream>

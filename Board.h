@@ -2,7 +2,7 @@
 #include <vector>
 #include "pieces.h"
 //GLobal table
-extern std::vector<std::vector<piece>> table;
+extern std::vector<std::vector<char>> table;
 
 void CreateTable(std::vector<std::vector<char>>& table,int size,char ch);
 void DrawTable(std::vector<std::vector<char>>);
