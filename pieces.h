@@ -46,8 +46,7 @@ inline bool piece::isValidMove(Vector2& targetPos, std::vector<std::vector<std::
         Vector2 dir = directions[i];
         
         if (isSliding) {
-            // For sliding pieces (rook, bishop, queen)
-            // Check if target is along this direction
+            // For sliding pieces defaults = rook, bishop, queen
             if (delta.x == 0 && delta.y == 0) return false;
             
             // Check if direction matches
@@ -72,7 +71,7 @@ inline bool piece::isValidMove(Vector2& targetPos, std::vector<std::vector<std::
             for (int s = 1; s < steps; s++) {
                 Vector2 checkPos = {Pos.x + step.x * s, Pos.y + step.y * s};
                 if (board[checkPos.x][checkPos.y] != nullptr) {
-                    return false; // Path blocked
+                    return false; // blocked
                 }
             }
             
@@ -81,12 +80,12 @@ inline bool piece::isValidMove(Vector2& targetPos, std::vector<std::vector<std::
         } else {
             // For non-sliding pieces (knight, king)
             if (delta.x == dir.x && delta.y == dir.y) {
-                return true; // Exact match
+                return true; 
             }
         }
     }
     
-    return false; // No valid direction found
+    return false; // No valid direction found as invalid movement
 }
 
 inline void piece::move(bool jump, Vector2& pos, std::vector<std::vector<std::shared_ptr<piece>>> &board){
@@ -140,7 +139,7 @@ inline bool pawn::isValidMove(Vector2& targetPos, std::vector<std::vector<std::s
     
     Vector2 delta = {targetPos.x - Pos.x, targetPos.y - Pos.y};
 
-    //(porpably temporal)solution for the both players having a diferent axis for forward
+    //(porbably temporal)solution for the both players having a diferent axis for forward
     int forward = isWhite ? -1 : 1;
     
     // Forward move (1 or 2 squares if inital movement)
