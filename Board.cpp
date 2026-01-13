@@ -1,7 +1,8 @@
 #include "Board.h"
 #include <vector>
 #include <iostream>
-
+#include <memory>
+#include "pieces.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -21,7 +22,6 @@ std::vector<std::vector<char>> table;
 void CreateTable(std::vector<std::vector<char>>& table,int size,char ch){
     return;
 }
-#include <iostream>
 
 void DrawCell(char ch, int size, int _UTF,int line)
 {
@@ -106,5 +106,16 @@ void DrawTable(std::vector<std::vector<char>> table) {
             std::cout << table[i][j] << ' ';
         }
         std::cout << std::endl;
+    }
+}
+
+void DrawTableObjects(std::vector<std::vector<std::shared_ptr<piece>>> & board) {
+    for (size_t i = 0; i < board.size(); ++i) {
+        for (size_t j = 0; j < board[i].size(); ++j) {
+            if (board[i][j]) {
+                std::cout << board[i][j]->Sprite << " ";
+            }
+        }
+        std::cout << std::endl; 
     }
 }

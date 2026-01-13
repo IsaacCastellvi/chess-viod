@@ -1,20 +1,26 @@
 #pragma once
 #include <vector>
 #include "string"
+#define SKIP_CHAR = "$n"
 
-std::vector<std::string> MainLayout;
-std::vector<std::string> OptionsLayout;
-std::vector<std::string> GameLayout;
+extern std::vector<std::string> MainLayout;
+extern std::vector<std::string> OptionsLayout;
+extern std::vector<std::string> GameLayout;
+extern std::vector<std::string>* Current;
 
-std::vector<std::string>* Current;
+extern int Selected;
+
+
 
 enum Input {
     NONE,DOWN,UP,RIGTH,LEFT,ENTER,EXIT
 };
 
+// the character $n will represent line skip
 
-void displayMenu(std::vector<std::string> ActiveDisplay);
-void OnStart(std::vector<std::string>); // set the current to a default before starting to aviod errors
+void ToggleMenu();
+void displayMenu();
+void OnStart(); // set the current to a default before starting to aviod errors
 void InitLayouts();
-void ChancheCurrent();
+void ChancheCurrent(std::vector<std::string>& newM);
 Input Getinput();
