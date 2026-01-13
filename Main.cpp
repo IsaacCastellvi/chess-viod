@@ -10,6 +10,11 @@ std::string hola = "hola";
 Vector2 movement = {1,0};
 std::vector<std::vector<std::shared_ptr<piece>>> objectTable;
 int main() {
+
+    //menu,not implemented
+    OnStart();
+    displayMenu();
+
     std::cout << "=== CHESS GAME ===\n";
     std::cout << "Instructions:\n";
     std::cout << "- Enter moves using chess notation (e.g., select 'E2', then 'E4')\n";
