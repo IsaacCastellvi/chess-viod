@@ -84,21 +84,25 @@ std::vector<std::vector<std::shared_ptr<piece>>> InitializeBoard() {
     return board;
 }
 
+//##############################################################################
+//##################### CONVERISON ##############################################
+//###############################################################################
 Vector2 ConvertChessNotation(const std::string& notation) {
     if (notation.length() < 2) return Vector2{-1, -1};
     
-    char file = toupper(notation[0]);  // Column letter (A-H)
-    char rank = notation[1];           // Row number (1-8)
+    char file = toupper(notation[0]);  // A-H
+    char rank = notation[1];           // 1-8
     
     if (file < 'A' || file > 'H' || rank < '1' || rank > '8') {
         return Vector2{-1, -1};
     }
     
-    // Display shows rank 1 at TOP, rank 8 at BOTTOM
-    // So: '1' -> 0, '2' -> 1, ..., '8' -> 7
-    int x = (rank - '1');      // Simple conversion!
-    int y = file - 'A';        // 'A' -> 0, 'B' -> 1, ..., 'H' -> 7
+    // RANK 1 is at TOP (array row 0), RANK 8 at BOTTOM (array row 7)
+    int x = (rank - '1');  // '1' -> 0, '2' -> 1, ..., '8' -> 7
+    int y = file - 'A';    // 'A' -> 0, 'B' -> 1, ..., 'H' -> 7
     
+    //ADDING FOR CONVERSION BUGS
+    std::cout << "DEBUG CONVERSION: " << notation << " -> [" << x << "," << y << "]\n";
     return Vector2{x, y};
 }
 
@@ -113,9 +117,86 @@ std::string ConvertToChessNotation(const Vector2& pos) {
     return notation;
 }
 
+//##############################################################################
+//##################### CHECK.CHECKMATE ##############################################
+//###############################################################################
+// find specific player king
+Vector2 FindKingPosition(const std::vector<std::vector<std::shared_ptr<piece>>>& board, bool findWhiteKing) {
+    for (int i = 0; i < board.size(); i++) {
+        for (int j = 0; j < board[i].size(); j++) {
+            if (board[i][j] != nullptr && dynamic_cast<king*>(board[i][j].get()) != nullptr) {
+                if (board[i][j]->isWhite == findWhiteKing) {
+                    return Vector2{i, j};
+                }
+            }
+        }
+    }
+    return Vector2{-1, -1};
+}
+
+// specific king in check
+bool IsKingInCheck(const std::vector<std::vector<std::shared_ptr<piece>>>& board, bool isWhiteKing) {
+    Vector2 kingPos = FindKingPosition(board, isWhiteKing);
+    if (kingPos.x == -1) return false;
+    
+    for (int i = 0; i < board.size(); i++) {
+        for (int j = 0; j < board[i].size(); j++) {
+            if (board[i][j] != nullptr && board[i][j]->isWhite != isWhiteKing) {
+                Vector2 targetPos = kingPos;
+                if (board[i][j]->isValidMove(targetPos, board)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+// return true if a move would leave your king in check
+bool DoesMoveCauseSelfCheck(std::vector<std::vector<std::shared_ptr<piece>>>& board, const Vector2& from, const Vector2& to, bool isWhite) {
+    // calculated trougth creating a future copy of the outcome,could plan on adding a danger property on cell based on specific piece position
+    auto tempBoard = board;
+    
+    // Move piece on copy
+    if (tempBoard[from.x][from.y]) {
+        tempBoard[to.x][to.y] = tempBoard[from.x][from.y];
+        tempBoard[from.x][from.y] = nullptr;
+        tempBoard[to.x][to.y]->Pos = to;
+        
+        // Check if king is in check now
+        return IsKingInCheck(tempBoard, isWhite);
+    }
+    return true;
+}
+
+// check if player has any safe move
+bool HasAnyLegalMove(std::vector<std::vector<std::shared_ptr<piece>>>& board, bool isWhite) {
+    for (int i = 0; i < board.size(); i++) {
+        for (int j = 0; j < board[i].size(); j++) {
+            if (board[i][j] != nullptr && board[i][j]->isWhite == isWhite) {
+                // Try all squares
+                for (int x = 0; x < board.size(); x++) {
+                    for (int y = 0; y < board[x].size(); y++) {
+                        Vector2 from{i, j};
+                        Vector2 to{x, y};
+                        if (board[i][j]->isValidMove(to, board)) {
+                            if (!DoesMoveCauseSelfCheck(board, from, to, isWhite)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+//#################################################################################
+
 
 EndCond GameLoop(std::vector<std::vector<std::shared_ptr<piece>>> &board) {
     bool whiteTurn = true;
+    int Hindex;
     int turnCount = 1;
     int movesWithoutCapture = 0;
     std::string input;
@@ -132,7 +213,10 @@ EndCond GameLoop(std::vector<std::vector<std::shared_ptr<piece>>> &board) {
         std::cout << "=======================================\n\n";
         
         DrawTableObjects(board);
-        
+        //##########################################
+        //#                 CHECKS                 #
+        //##########################################
+
         // Check for end conditions - Kings exist?
         bool whiteKingExists = false;
         bool blackKingExists = false;
@@ -164,7 +248,25 @@ EndCond GameLoop(std::vector<std::vector<std::shared_ptr<piece>>> &board) {
             std::cout << "\nDraw by 50-move rule!\n";
             return EndCond::DRAW;
         }
-        
+        // Check if king is in check
+        bool inCheck = IsKingInCheck(board, whiteTurn);
+        if (inCheck) {
+            std::cout << "\nCHECK! Your king is under attack! 0;| \n";
+        }
+
+        // Check for checkmate/stalemate
+        bool hasLegalMoves = HasAnyLegalMove(board, whiteTurn);
+        if (!hasLegalMoves) {
+            if (inCheck) {
+                std::cout << "\n CHECKMATE! " 
+                        << (whiteTurn ? "Black" : "White") << " wins! \n";
+                return whiteTurn ? EndCond::BLACKWIN : EndCond::WHITEWIN;
+            } else {
+                std::cout << "\n STALEMATE! Draw! |= \n ";
+                return EndCond::DRAW;
+            }
+        }
+
         // transformn notations
         Vector2 selectedPiece;
         bool validSelection = false;
@@ -252,7 +354,8 @@ EndCond GameLoop(std::vector<std::vector<std::shared_ptr<piece>>> &board) {
         while (!validMove) {
             std::cout << "Move to (e.g., E4, D5, etc.) or 'cancel': ";
             std::cin >> input;
-            
+            // SKIP CHECK
+            //board[selectedPiece.x][selectedPiece.y]->Pos = selectedPiece;
             if (input == "cancel" || input == "CANCEL") {
                 std::cout << "Move cancelled. Select a different piece.\n";
                 break; 
@@ -279,6 +382,12 @@ EndCond GameLoop(std::vector<std::vector<std::shared_ptr<piece>>> &board) {
                 continue;
             }
             
+            // **HARDCODED a7 pawn fix**
+            if (selectedPiece.x == 6 - Hindex && selectedPiece.y == 0) {  // A7 position
+                board[6][0]->Pos = Vector2{6, 0};
+                Hindex--;
+            }
+
             // validate func
             if (selectedPiecePtr->isValidMove(targetPos, board)) {
                 validMove = true;

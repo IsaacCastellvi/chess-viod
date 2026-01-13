@@ -8,7 +8,7 @@
 class piece
 {
 public:
-    Vector2 Pos{4, 4};
+    Vector2 Pos{0, 0};
     char Sprite{'#'};
     bool isWhite = true;
     
@@ -18,13 +18,14 @@ public:
     bool isSliding = false;
     
     piece() = default;
-    virtual bool isValidMove(Vector2& targetPos, std::vector<std::vector<std::shared_ptr<piece>>>& board);
+    //added const reference for temp bug
+    virtual bool isValidMove(Vector2& targetPos,const std::vector<std::vector<std::shared_ptr<piece>>>& board);
     virtual void move(bool jump,Vector2& pos,std::vector<std::vector<std::shared_ptr<piece>>> &board);
     virtual ~piece() = default;
 };
 
 // Check if a move is valid for this piece
-inline bool piece::isValidMove(Vector2& targetPos, std::vector<std::vector<std::shared_ptr<piece>>>& board) {
+inline bool piece::isValidMove(Vector2& targetPos,const std::vector<std::vector<std::shared_ptr<piece>>>& board) {
     // Check bounds
     if (board.empty() || board[0].empty() ||
         targetPos.x < 0 || targetPos.x >= board.size() || 
@@ -116,7 +117,7 @@ public:
     bool firstMove = true;
     pawn(bool isWhite);
     ~pawn() override = default;
-    bool isValidMove(Vector2& targetPos, std::vector<std::vector<std::shared_ptr<piece>>>& board) override;
+    bool isValidMove(Vector2& targetPos, const std::vector<std::vector<std::shared_ptr<piece>>>& board) override;
     void move(bool jump,Vector2& pos,std::vector<std::vector<std::shared_ptr<piece>>> &board) override;
 };
 
@@ -129,7 +130,8 @@ inline pawn::pawn(bool isWhite)
     isSliding = false;
 }
 
-inline bool pawn::isValidMove(Vector2& targetPos, std::vector<std::vector<std::shared_ptr<piece>>>& board) {
+inline bool pawn::isValidMove(Vector2& targetPos,const std::vector<std::vector<std::shared_ptr<piece>>>& board) {
+
     // Check bounds
     if (board.empty() || board[0].empty() ||
         targetPos.x < 0 || targetPos.x >= board.size() || 
@@ -138,31 +140,31 @@ inline bool pawn::isValidMove(Vector2& targetPos, std::vector<std::vector<std::s
     }
     
     Vector2 delta = {targetPos.x - Pos.x, targetPos.y - Pos.y};
-
-    //(porbably temporal)solution for the both players having a diferent axis for forward
-    int forward = isWhite ? -1 : 1;
+    int forward = isWhite ? -1 : 1;  // White pawns: forward = -1 (UP)
     
+   
     // Forward move (1 or 2 squares if inital movement)
-    if (delta.y == 0) {
+    if (delta.y == 0) {        
         if (delta.x == forward && board[targetPos.x][targetPos.y] == nullptr) {
             return true; // Move 1 forward
         }
+    
+        
         if (firstMove && delta.x == forward * 2 && 
             board[targetPos.x][targetPos.y] == nullptr &&
             board[Pos.x + forward][Pos.y] == nullptr) {
-            firstMove = false;
             return true; // Move 2 forward on first move
         }
     }
     
     // Diagonal capture
     if (delta.x == forward && std::abs(delta.y) == 1) {
+       
         if (board[targetPos.x][targetPos.y] != nullptr &&
             board[targetPos.x][targetPos.y]->isWhite != this->isWhite) {
             return true; // Capture
         }
     }
-    
     return false;
 }
 

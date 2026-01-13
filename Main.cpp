@@ -20,9 +20,7 @@ int main() {
     std::cout << "- Type 'cancel' during move selection to choose different piece\n\n";
     
     objectTable = InitializeBoard();
-    std::cout << "Initial objectTable setup:\n";
-    DrawTableObjects(objectTable);
-    
+
     EndCond result = GameLoop(objectTable);
     
     std::cout << "\n=== GAME OVER ===\n";
