@@ -110,12 +110,43 @@ void DrawTable(std::vector<std::vector<char>> table) {
 }
 
 void DrawTableObjects(std::vector<std::vector<std::shared_ptr<piece>>> & board) {
+    // Column labels at the top
+    std::cout << "    ";  // Space for row numbers
+    for (char col = 'A'; col < 'A' + board[0].size(); ++col) {
+        std::cout << " " << col << "  ";
+    }
+    std::cout << std::endl;
+    
     for (size_t i = 0; i < board.size(); ++i) {
+        // Top line of cells
+        std::cout << "    ";  // Space for row numbers
         for (size_t j = 0; j < board[i].size(); ++j) {
-            if (board[i][j]) {
-                std::cout << board[i][j]->Sprite << " ";
-            }
+            std::cout << "╭─╮";
+            if (j < board[i].size() - 1) std::cout << " ";
         }
-        std::cout << std::endl; 
+        std::cout << std::endl;
+        
+        // Middle line with piece sprite and row number
+        std::cout << " " << (i + 1) << "  ";  // Row number on the left
+        for (size_t j = 0; j < board[i].size(); ++j) {
+            std::cout << "│";
+            if (board[i][j]) {
+                //if its nullptr it will just print null
+                std::cout << board[i][j]->Sprite;
+            } else {
+                std::cout << " ";
+            }
+            std::cout << "│";
+            if (j < board[i].size() - 1) std::cout << " ";
+        }
+        std::cout << std::endl;
+        
+        // Bottom line of cells
+        std::cout << "    ";  // Space for row numbers
+        for (size_t j = 0; j < board[i].size(); ++j) {
+            std::cout << "╰─╯";
+            if (j < board[i].size() - 1) std::cout << " ";
+        }
+        std::cout << std::endl;
     }
 }

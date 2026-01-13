@@ -7,34 +7,45 @@
 #include "memory"
 
 std::string hola = "hola";
-Vector2 movement = {2,0};
+Vector2 movement = {1,0};
 std::vector<std::vector<std::shared_ptr<piece>>> objectTable;
-int main(){
-    initGameOjects(objectTable);
-    //setupUTF8();
-    //initGame(table,2);
-    //DrawTable(table);
-    std::cout << "\n";
-    //DrawCell('squeare',3,3,1);
-    //DrawCell('squeare',3,3,1);    
+int main() {
+    std::cout << "=== CHESS GAME ===\n";
+    std::cout << "Instructions:\n";
+    std::cout << "- Enter moves using chess notation (e.g., select 'E2', then 'E4')\n";
+    std::cout << "- White pieces are uppercase, Black pieces are lowercase\n";
+    std::cout << "- Type 'resign' to resign\n";
+    std::cout << "- Type 'draw' to offer a draw\n";
+    std::cout << "- Type 'help' to show help\n";
+    std::cout << "- Type 'cancel' during move selection to choose different piece\n\n";
     
+    objectTable = InitializeBoard();
+    std::cout << "Initial objectTable setup:\n";
     DrawTableObjects(objectTable);
-    std::cout << "╭─────────╮\n";
-    std::cout << "│ Hello!  │\n";
-    std::cout << "╰─────────╯\n";
-    OnStart();
-    //FIX CHANCHING MENU
-    displayMenu();
-    ChancheCurrent(OptionsLayout);
-    displayMenu();
-    GameLoop();
-    auto& square = objectTable[6][0]; // white pawn at a2
-
-
-
-    std::cout << square->Sprite << square->Pos.x << square->Pos.y << std::endl ;
-    square->move(false,movement,objectTable);
-    std::cout << "updated Piece: " << square->Pos.x << square->Pos.y << std::endl ;
+    
+    EndCond result = GameLoop(objectTable);
+    
+    std::cout << "\n=== GAME OVER ===\n";
+    switch(result) {
+        case EndCond::WHITEWIN:
+            std::cout << "White wins! Congrats (;\n";
+            break;
+        case EndCond::BLACKWIN:
+            std::cout << "Black wins! Congrats (;\n";
+            break;
+        case EndCond::DRAW:
+            std::cout << "Game ended in a draw =|\n";
+            break;
+        case EndCond::EXCEPTION:
+            std::cout << "Game terminated.\n";
+            break;
+        default:
+            std::cout << "Unknown result or undefined .\n";
+    }
+    
+    // Show final objectTable
+    std::cout << "\nFinal objectTable position:\n";
     DrawTableObjects(objectTable);
+    
     return 0;
 }
